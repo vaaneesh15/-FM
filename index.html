@@ -4,8 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Пупок FM</title>
-    <!-- Подключаем манифест для PWA -->
+    
+    <!-- Метатеги для PWA (iOS и Android) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Пупок FM">
+    <meta name="theme-color" id="theme-color-meta" content="#4a3aff">
+    
+    <!-- Подключаем манифест -->
     <link rel="manifest" href="manifest.json">
+    
     <style>
         * {
             margin: 0;
@@ -86,7 +94,8 @@
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             box-shadow: var(--shadow), inset 0 1px 2px rgba(255,255,255,0.3);
-            padding: 24px 16px;
+            /* Обновлённый padding с учётом safe area */
+            padding: max(24px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom)) 16px;
             border: none;
             display: flex;
             flex-direction: column;
@@ -425,7 +434,7 @@
             display: none !important;
         }
     </style>
-    <!-- Font Awesome через CDN (будет закэшировано Service Worker) -->
+    <!-- Font Awesome через CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
@@ -468,7 +477,7 @@
 
     <script>
         (function() {
-            // ===== РЕГИСТРАЦИЯ SERVICE WORKER (исправлено) =====
+            // ===== РЕГИСТРАЦИЯ SERVICE WORKER =====
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
                     navigator.serviceWorker.register('./sw.js')
@@ -477,7 +486,7 @@
                 });
             }
 
-            // ===== ОСНОВНОЙ КОД ПЛЕЕРА (без изменений) =====
+            // ===== ОСНОВНОЙ КОД ПЛЕЕРА =====
             const DB_NAME = 'PupokFMDB';
             const STORE_NAME = 'tracks';
             const DB_VERSION = 2;
@@ -503,9 +512,20 @@
 
                 document.body.classList.toggle('dark', isDark);
 
+                // Обновляем иконку темы
                 if (currentTheme === 'light') themeIcon.className = 'fas fa-sun';
                 else if (currentTheme === 'dark') themeIcon.className = 'fas fa-moon';
                 else themeIcon.className = 'fas fa-circle-half-stroke';
+
+                // Обновляем theme-color для Android и др.
+                const themeColorMeta = document.getElementById('theme-color-meta');
+                if (themeColorMeta) {
+                    if (isDark) {
+                        themeColorMeta.setAttribute('content', '#1a1a2e'); // тёмный фон
+                    } else {
+                        themeColorMeta.setAttribute('content', '#4a3aff'); // фиолетовый акцент
+                    }
+                }
             }
 
             themeToggle.addEventListener('click', () => {
@@ -861,11 +881,10 @@
             }
             searchInput.addEventListener('input', filterTracks);
 
-            // Загрузка файлов с поддержкой MP3 и FLAC (через accept и проверку типа)
+            // Загрузка файлов
             fileInput.addEventListener('change', async (e) => {
                 const files = Array.from(e.target.files);
                 for (const file of files) {
-                    // Разрешаем только MP3 и FLAC (MIME-типы и расширения)
                     const isMp3 = file.type === 'audio/mpeg' || file.name.toLowerCase().endsWith('.mp3');
                     const isFlac = file.type === 'audio/flac' || file.name.toLowerCase().endsWith('.flac');
                     if (!isMp3 && !isFlac) {
