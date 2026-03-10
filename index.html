@@ -2,26 +2,37 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <!-- Запрет масштабирования и лишних жестов -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Пупок FM</title>
     
-    <!-- Метатеги для PWA (iOS и Android) -->
+    <!-- Метатеги для PWA -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Пупок FM">
     <meta name="theme-color" id="theme-color-meta" content="#4a3aff">
     
-    <!-- Подключаем манифест -->
     <link rel="manifest" href="manifest.json">
     
     <style>
+        /* Глобальные стили для запрета лишних действий */
+        html, body {
+            overscroll-behavior: none;
+            overflow: hidden;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
-            user-select: none;
-            -webkit-user-select: none;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
@@ -54,8 +65,9 @@
         body.dark {
             --bg-gradient-start: #1a1a2e;
             --bg-gradient-end: #16213e;
-            --container-bg: rgba(30, 30, 46, 0.8);
-            --container-border: rgba(255,255,255,0.15);
+            /* Более плотный фон контейнера, чтобы не было просветов */
+            --container-bg: rgba(26, 26, 46, 0.95);
+            --container-border: rgba(255,255,255,0.1);
             --text-primary: #f0f0ff;
             --text-secondary: #ecf0f1;
             --text-muted: #8a8aa0;
@@ -63,17 +75,18 @@
             --accent-light: #9a8cff;
             --card-bg: rgba(40, 40, 55, 0.7);
             --card-border: rgba(255,255,255,0.1);
-            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+            /* Мягкая тень, чтобы не создавала полос */
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
             --delete-color: #ff8a8a;
             --slider-track: rgba(255,255,255,0.15);
             --slider-thumb: #e0e0ff;
-            --scroll-thumb: #4a3aff;
+            --scroll-thumb: #6d5fff;
             --scroll-track: #2a2a40;
             --icon-bg: #2a2a40;
-            --panel-bg: rgba(30, 30, 46, 0.8);
+            --panel-bg: rgba(30, 30, 46, 0.9);
             --control-btn-bg: #2a2a40;
             --control-btn-color: #9a8cff;
-            --panel-separator: rgba(255,255,255,0.1);
+            --panel-separator: rgba(255,255,255,0.15);
         }
 
         body {
@@ -82,19 +95,16 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 0;
             overflow: hidden;
         }
 
         .player-container {
             width: 100%;
-            max-width: 100%;
             height: 100vh;
             background: var(--container-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            box-shadow: var(--shadow), inset 0 1px 2px rgba(255,255,255,0.3);
-            /* Обновлённый padding с учётом safe area */
+            box-shadow: var(--shadow), inset 0 1px 2px rgba(255,255,255,0.2);
             padding: max(24px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom)) 16px;
             border: none;
             display: flex;
@@ -273,6 +283,7 @@
             overflow-y: auto;
             scrollbar-width: thin;
             scrollbar-color: var(--scroll-thumb) var(--scroll-track);
+            -webkit-overflow-scrolling: touch; /* плавная прокрутка на iOS */
         }
 
         .playlist-content::-webkit-scrollbar {
@@ -477,7 +488,6 @@
 
     <script>
         (function() {
-            // ===== РЕГИСТРАЦИЯ SERVICE WORKER =====
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
                     navigator.serviceWorker.register('./sw.js')
@@ -486,14 +496,12 @@
                 });
             }
 
-            // ===== ОСНОВНОЙ КОД ПЛЕЕРА =====
             const DB_NAME = 'PupokFMDB';
             const STORE_NAME = 'tracks';
             const DB_VERSION = 2;
 
             let db = null;
 
-            // Тема
             const themeToggle = document.getElementById('theme-toggle');
             const themeIcon = themeToggle.querySelector('i');
             let currentTheme = localStorage.getItem('pupokTheme') || 'system';
@@ -512,18 +520,16 @@
 
                 document.body.classList.toggle('dark', isDark);
 
-                // Обновляем иконку темы
                 if (currentTheme === 'light') themeIcon.className = 'fas fa-sun';
                 else if (currentTheme === 'dark') themeIcon.className = 'fas fa-moon';
                 else themeIcon.className = 'fas fa-circle-half-stroke';
 
-                // Обновляем theme-color для Android и др.
                 const themeColorMeta = document.getElementById('theme-color-meta');
                 if (themeColorMeta) {
                     if (isDark) {
-                        themeColorMeta.setAttribute('content', '#1a1a2e'); // тёмный фон
+                        themeColorMeta.setAttribute('content', '#1a1a2e');
                     } else {
-                        themeColorMeta.setAttribute('content', '#4a3aff'); // фиолетовый акцент
+                        themeColorMeta.setAttribute('content', '#4a3aff');
                     }
                 }
             }
@@ -536,7 +542,6 @@
 
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
 
-            // Настройки воспроизведения
             const autoplayBtn = document.getElementById('autoplay-btn');
             const repeatBtn = document.getElementById('repeat-btn');
 
@@ -575,7 +580,6 @@
             updateAutoplayButton();
             updateRepeatButton();
 
-            // IndexedDB
             function openDB() {
                 return new Promise((resolve, reject) => {
                     const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -626,7 +630,6 @@
                 });
             }
 
-            // Элементы интерфейса
             const audio = document.getElementById('global-audio');
             const playlistEl = document.getElementById('playlist');
             const emptyMsg = document.getElementById('empty-message');
@@ -881,7 +884,6 @@
             }
             searchInput.addEventListener('input', filterTracks);
 
-            // Загрузка файлов
             fileInput.addEventListener('change', async (e) => {
                 const files = Array.from(e.target.files);
                 for (const file of files) {
