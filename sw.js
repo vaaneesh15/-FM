@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pupok-fm-v3';
+const CACHE_NAME = 'pupok-fm-v4';
 const urlsToCache = [
   './',
   './index.html',
