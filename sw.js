@@ -1,5 +1,5 @@
 // sw.js – Service Worker для офлайн-доступа
-const CACHE_NAME = 'pupok-fm-v3'; // <-- версия увеличена
+const CACHE_NAME = 'pupok-fm-v3'; // Увеличена версия для обновления кэша
 const urlsToCache = [
   './',
   './index.html',
@@ -40,6 +40,7 @@ self.addEventListener('activate', event => {
 
 // Перехват запросов – стратегия "сначала кэш, потом сеть"
 self.addEventListener('fetch', event => {
+  // Для навигационных запросов (переход по ссылке) отдаём index.html из кэша
   if (event.request.mode === 'navigate') {
     event.respondWith(
       caches.match('./index.html').then(response => {
@@ -49,6 +50,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
+  // Для остальных ресурсов
   event.respondWith(
     caches.match(event.request)
       .then(cachedResponse => {
@@ -56,6 +58,7 @@ self.addEventListener('fetch', event => {
           return cachedResponse;
         }
         return fetch(event.request).then(networkResponse => {
+          // Кэшируем только успешные ответы с тех же источников (CDN и свои)
           if (networkResponse && networkResponse.status === 200 && 
               (event.request.url.includes('cdnjs.cloudflare.com') || event.request.url.startsWith(self.location.origin))) {
             const responseToCache = networkResponse.clone();
