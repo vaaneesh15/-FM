@@ -1,15 +1,24 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Фон с градиентом (фиолетовый, как в теме) -->
+  <!-- Фиолетовый градиентный фон (как был) -->
   <rect width="512" height="512" rx="128" fill="url(#grad)" />
   <!-- Стеклянный эффект (блик) -->
   <rect x="32" y="32" width="448" height="448" rx="96" fill="url(#glass)" />
-  <!-- Нота -->
-  <g transform="translate(256, 256) scale(0.8)">
-    <path d="M170 145.4V304C170 326.1 152.1 344 130 344H120C97.9 344 80 326.1 80 304C80 281.9 97.9 264 120 264H130C139.2 264 147.7 267.2 154.4 272.6V90L290 54.5V191.2C290 213.3 272.1 231.2 250 231.2H240C217.9 231.2 200 213.3 200 191.2C200 169.1 217.9 151.2 240 151.2H250C259.2 151.2 267.7 154.4 274.4 159.8V42.9L170 67.4V145.4Z"
-          fill="white" fill-opacity="0.9" />
-    <!-- Дополнительный блик на ноте -->
-    <circle cx="200" cy="280" r="20" fill="white" fill-opacity="0.3" />
+  
+  <!-- Иконка Play (треугольник) -->
+  <g transform="translate(256, 256) scale(0.9)">
+    <!-- Основной треугольник с мягкими углами (скругление 20) -->
+    <path d="M100 150 L300 150 L200 350 Z" 
+          fill="white" 
+          fill-opacity="0.95"
+          transform="rotate(90, 200, 250)" 
+          stroke="white" 
+          stroke-width="4" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" />
+    <!-- Блик на треугольнике (маленький кружок) -->
+    <circle cx="200" cy="200" r="25" fill="white" fill-opacity="0.4" transform="rotate(90, 200, 250)" />
   </g>
+
   <defs>
     <linearGradient id="grad" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
       <stop stop-color="#4a3aff"/>
